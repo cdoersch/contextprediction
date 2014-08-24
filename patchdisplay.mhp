@@ -1,0 +1,72 @@
+<%
+% Written by Carl Doersch (cdoersch at cs dot cmu dot edu)
+%
+% Display a series of patches, each of which is associated with a cluster.
+% Each cluster will get one row, and patches assigned to that cluster
+% will be ordered descending by score.
+%
+% We assume that the array patchimg
+% argv.dets: the detections to display; this is where the scores and detetor
+%            id's are read from.  Standard detection matrix format.  We assume
+%            that the array 'patchimg' in dswork is already pre-populated
+%            with the patches associated with each of these detections.
+%
+% argv.detord: A list of detetor id's that can be matched to column 6 of argv.dets,
+%             specifying the order to display the clusters in.
+%
+% argv.message: an optional message to display with each detector.  Parallel
+%               array with argv.detord.
+%
+% argv.ispos: an optional binary array parallel with the rows of argv.dets.  If specified,
+%             detections with ispos marked as 1 will be displayed with a green border;
+%             those marked as 0 will be displayed with a red one.
+%>
+<html><body>
+<table>
+<% 
+if(~isfield(argv,'ovlweights'))
+  argv.ovlweights=zeros(size(argv.dets(:,[])));
+end
+[dets,posinpatchimg,ovlweights,detid]=distributeby(argv.dets,(1:size(argv.dets,1))',argv.ovlweights,argv.dets(:,6));
+if(isfield(argv,'detrord'))
+  [~,idxord]=ismember(argv.detrord,detid);
+else
+  idxord=1:numel(detid);
+  argv.detrord=detid;
+end
+if(~isfield(argv,'message'))
+  argv.message=repmat({''},numel(argv.detrord),1);
+end
+gbz=dsload('ds.conf.gbz{ds.conf.currimset}');
+imgs=dsload('.ds.imgs{ds.conf.currimset}');
+if(~isfield(gbz,'imgsurl'))
+  gbz.imgsurl='';
+end
+for(i=1:numel(idxord)) %>
+  <tr><td><%=i%>:detr. no. <%=argv.detrord(i)%> <br/> <%=argv.message{i}%></td>
+  <%if(idxord(i) ~= 0)
+    curdets=dets{idxord(i)};
+    curpos=posinpatchimg{idxord(i)};
+    curwt=ovlweights{idxord(i)};
+    [~,ord]=sort(curdets(:,5),'descend');
+    if(dsfield(argv,'maxperdet')),ord=ord(1:min(numel(ord),argv.maxperdet));end
+    for(j=1:numel(ord)), %>
+      <td <%if(isfield(argv,'ispos'))%> style="border:solid 1px #<%if(argv.ispos(curpos(ord(j))))%>00FF00<%else%>FF0000<%end%>;"<%end%>>
+        <a href="<%if(isfield(argv,'url'))%><%=argv.url{curpos(ord(j))}%><%else%><%=gbz.imgsurl%>/<%=imgs.fullname{curdets(ord(j),7)}%><%end%>">
+          <%if(isfield(argv,'ctrbox'))%>
+            <div style="position:relative">
+              <div style="border:solid 2px #0F0;width:<%=argv.ctrbox(3)-argv.ctrbox(1)+1%>px;height:<%=argv.ctrbox(4)-argv.ctrbox(2)+1%>px;position:absolute;top:<%=argv.ctrbox(2)%>px;left:<%=argv.ctrbox(1)%>px;" title="score:<%=curdets(ord(j),5)%>"></div>
+          <%end%>
+            <img style="<%if(isfield(argv,'patchwidth'))%>width:<%=argv.patchwidth%><%end%>" src="patchimg[]/<%=curpos(ord(j))%>.jpg" title="score:<%=curdets(ord(j),5)%>"/>
+          <%if(isfield(argv,'ctrbox'))%>
+            </div>
+          <%end%>
+        </a>
+      </td>
+    <%end
+  end%>
+  </tr>
+<%end%>
+      
+</table>
+</body></html>
