@@ -279,7 +279,7 @@ function [thingloglik, stuffloglik, corresp,pyrs,inimpyrlevel,blurthingprob,exem
       error('nans in blurthingprob');
     end
 
-    % equation 16 from the paper
+    % equation 26 from the paper
     exempconfidence=repmat(thingprob*0,[1,1,size(predictorbbox,1)]);
     for(i=1:size(exempconfidence,3))
       tmp=exp(gaussfiltervalid(log(exempaccuracy(:,:,i)),have_preds,2));

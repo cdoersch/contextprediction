@@ -317,7 +317,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             Map<VectorXd> othdata(othhog+idx,ndims-1);
             tmpprob = exp(-(mydatatransf.dot(othdata)+myconst)/2);
             tmpprob=tmpprob/(tmpprob+.01*(*(othhog+idx+ndims-1)));
-            //if(rand()%100000==0){mexPrintf("%f\n",tmpprob);}TODO remove
             cachedata[(windowx-xmin)*(ymax-ymin+1)+windowy-ymin]=tmpprob;
             if(prob!=prob){
               if(DEBUG){mexPrintf("%f %f %f %f\n",tmpprob,myconst,mydatatransf.dot(othdata),*(othhog+idx+ndims-1));}
@@ -339,9 +338,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       if(DEBUG){mexPrintf("6\n");mexEvalString("drawnow;");}
       if(DEBUG){mexPrintf("sumwt\n");mexEvalString("drawnow;");}
       if(DEBUG){cout << sumwt << "\n" << sumprob << "\n";}
-      //if(sumprob>0){ //TODO remove
-      //  sumwt=sumwt/sumprob;
-      //}
       if(DEBUG){mexPrintf("relsigma\n");mexEvalString("drawnow;");}
       if(DEBUG){cout << relsigma << "\n";}
       if(DEBUG){mexPrintf("sumwt\n");mexEvalString("drawnow;");}
@@ -356,7 +352,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
       // Finally, put it all together
       Matrix2d nablasigma=(mycovarinv*(relsigma+sumwt*myconfidence)*mycovarinv-relsigmainv-mycovarinv*sumprob*myconfidence)/2;
-      //Matrix2d nablasigma=(mycovarinv*(relsigma+sumwt*myconfidence)*mycovarinv-relsigmainv-mycovarinv*myconfidence)/2; //TODO remove
       double covarstepsz=.1;
       if(nablasigma(0)!=nablasigma(0)){
         errmsg="nans in nablasigma";
@@ -388,7 +383,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       if(DEBUG){mexPrintf("starting mu update\n");mexEvalString("drawnow;");}
       // Just like before, we start off by iterating over edges, this time
       // aggregating system of linear equations that's defined by taking the 
-      // derivative of equation 17 (which needs to along with equation 16, but 
+      // derivative of equation 17 (note that this system also needs to have 
+      // some terms from  equation 16 added in, but 
       // we'll add those terms to the system later) and setting it to 0.
       //
       // We ultimately end up with an equation of the form syst*mu=constr,
@@ -501,11 +497,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       }
       if(DEBUG){cout << mn << "\n" << mymu << "\n";}
       if(DEBUG){cout << sumprob << "\n";}
-      //if(sumprob>0){ //TODO remove
-      //  mn=mn/sumprob+mymu;
-      //  constr=constr+newcovarinv*mn*myconfidence;
-      //}
-      //syst=syst+newcovarinv*myconfidence;
       constr=constr+newcovarinv*(mn+mymu*sumprob)*myconfidence;
       syst=syst+newcovarinv*sumprob*myconfidence;
       // Now put it all together.
