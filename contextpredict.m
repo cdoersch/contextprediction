@@ -110,7 +110,7 @@
 %                   energy.
 %           
 
-function [thingloglik, stuffloglik, corresp,pyrs,inimpyrlevel,blurthingprob,exempconfidence,mimicryscore,orig_patch_loc,mimicryscorenoocc]=contextpredict(querybbox,predictorbbox,stuffmodel,confidencemaps,conf)
+function [thingloglik, stuffloglik, corresp,pyrs,inimpyrlevel,blurthingprob,exempconfidence,mimicryscore,orig_patch_loc,mimicryscorenooc]=contextpredict(querybbox,predictorbbox,stuffmodel,confidencemaps,conf)
   global ds;
   try
   if(~exist('conf','var'))
